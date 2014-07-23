@@ -3,7 +3,7 @@
 	/**
 	 * Create a capitalize method because JavaScript is lame and doesn't have one
 	 * @returns {string}
-	 * @example console.log("foo".capitalize()) => "Foo"
+	 * @example console.log("foo".capitalize()) prints "Foo" to the console
 	 */
 	String.prototype.capitalize = function () {
 		return this.charAt(0).toUpperCase() + this.slice(1);
@@ -15,24 +15,36 @@
 	 */
 	$.fn.validator = function (options) {
 		var defaults = $.extend($.fn.validator.defaults, options);
-		console.log(defaults);
+		// console.log(defaults);
 
-		var $selectors = "#" + this[0].id + " input[required], #" + this[0].id + " select[required], #" + this[0].id + " textarea[required]";
+		var $formSelection = "#" + this[0].id;
+		if(!this[0].id) {
+			if(!this[0].className) {
+				$formSelection = this[0].localName;
+			} else {
+				$formSelection = "." + this[0].className;
+			}
+		}
+
+		var $selectors = $formSelection + " input[required], " + $formSelection + " select[required], " + $formSelection + " textarea[required]";
 
 		$(this).submit(function (e) {
 			e.preventDefault();
 			$($selectors).each(function (index) {
 				// console.log( $(this).attr("name") );
-				$(this).basicValidation($(this));
-				$(this).clearFields($(this));
+				if( !$(this).hasClass("invalid") ) {
+					$(this).basicValidation($(this));
+					$(this).clearFields($(this));
+				}
 			});
+
+			return true;
 		});
 	};
 
 	/**
 	 * Our basic validation rules
 	 * @param data
-	 * @access public
 	 */
 	$.fn.basicValidation = function (data) {
 		// console.log(data);
@@ -41,7 +53,7 @@
 			data.addClass("invalid").val(errorMessage);
 		} else {
 			if (data.attr("type") === "email") {
-				if (!emailValidation($('input[type="email"]').val())) {
+				if (!isValidEmail($('input[type="email"]').val())) {
 					var $org = $('input[type="email"]').val();
 					data.addClass("invalid").val("Invalid email address entered");
 					data.on($.fn.validator.defaults.clearValidationOn, function () {
@@ -54,7 +66,6 @@
 
 	/**
 	 * The logic involved in clearing the fields after an error has occurred
-	 * @access public
 	 */
 	$.fn.clearFields = function () {
 		// console.log($.fn.validator.defaults.clearValidationOn);
@@ -65,7 +76,7 @@
 		});
 	};
 
-	function emailValidation(email) {
+	function isValidEmail (email) {
 		var pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 
 		return pattern.test(email);
@@ -82,8 +93,10 @@
 	$.fn.validator.defaults = {
 		class: "invalid",
 		validateEmail: true,
-		clearValidationOn: "keypress",
-		debug: false
+		validateURL: true,
+		clearValidationOn: "focus",
+		debug: false,
+		callback: null
 	};
 
 })(jQuery);
