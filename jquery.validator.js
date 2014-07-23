@@ -15,7 +15,6 @@
 	 */
 	$.fn.validator = function (options) {
 		var defaults = $.extend($.fn.validator.defaults, options);
-		// console.log(defaults);
 
 		var $formSelection = "#" + this[0].id;
 		if(!this[0].id) {
@@ -31,8 +30,7 @@
 		$(this).submit(function (e) {
 			e.preventDefault();
 			$($selectors).each(function (index) {
-				// console.log( $(this).attr("name") );
-				if( !$(this).hasClass("invalid") ) {
+				if( !$(this).hasClass($.fn.validator.defaults.class) ) {
 					$(this).basicValidation($(this));
 					$(this).clearFields($(this));
 				}
@@ -47,17 +45,16 @@
 	 * @param data
 	 */
 	$.fn.basicValidation = function (data) {
-		// console.log(data);
 		if (data.val() === "") {
 			var errorMessage = data.attr("name").capitalize() + " cannot be empty";
-			data.addClass("invalid").val(errorMessage);
+			data.addClass($.fn.validator.defaults.class).val(errorMessage);
 		} else {
 			if (data.attr("type") === "email") {
-				if (!isValidEmail($('input[type="email"]').val())) {
+				if ($.fn.validator.defaults.validateEmail && !isValidEmail($('input[type="email"]').val())) {
 					var $org = $('input[type="email"]').val();
-					data.addClass("invalid").val("Invalid email address entered");
+					data.addClass($.fn.validator.defaults.class).val("Invalid email address entered");
 					data.on($.fn.validator.defaults.clearValidationOn, function () {
-						$(this).val($org).removeClass("invalid");
+						$(this).val($org).removeClass($.fn.validator.defaults.class);
 					});
 				}
 			}
@@ -68,10 +65,9 @@
 	 * The logic involved in clearing the fields after an error has occurred
 	 */
 	$.fn.clearFields = function () {
-		// console.log($.fn.validator.defaults.clearValidationOn);
 		$(this).on($.fn.validator.defaults.clearValidationOn, function () {
-			if ($(this).hasClass("invalid")) {
-				$(this).val("").removeClass("invalid");
+			if ($(this).hasClass($.fn.validator.defaults.class)) {
+				$(this).val("").removeClass($.fn.validator.defaults.class);
 			}
 		});
 	};
@@ -82,10 +78,6 @@
 		return pattern.test(email);
 	}
 
-	function debug(log) {
-
-	}
-
 	/**
 	 * The defaults of the plugin
 	 * @type {{class: string, validateEmail: boolean, clearValidationOn: string, debug: boolean}}
@@ -93,10 +85,7 @@
 	$.fn.validator.defaults = {
 		class: "invalid",
 		validateEmail: true,
-		validateURL: true,
 		clearValidationOn: "focus",
-		debug: false,
-		callback: null
 	};
 
 })(jQuery);
